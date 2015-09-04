@@ -1,2 +1,8 @@
+# Exec file
+checkers
+
 # Compiled Object files
 *.o
+
+#vim weird files
+*.swp
