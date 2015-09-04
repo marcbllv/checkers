@@ -1,0 +1,7 @@
+# Heuristics
+
+http://www.mini.pw.edu.pl/~kwaledzik/legacy/research/papers/ExpSys07-Checkers.pdf
+
+- difference between number of pieces & opponent's number of pieces
+- number of pieces that could be eaten
+- proximity with opponent side (to get a king)
