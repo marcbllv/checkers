@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -Wall
+CXXFLAGS = -Wall -std=c++0x
 
 EXE = checkers
 OBJFILES = main.o player.o gamestate.o
