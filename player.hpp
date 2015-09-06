@@ -5,6 +5,7 @@
 #include "deadline.hpp"
 #include "move.hpp"
 #include "gamestate.hpp"
+#include "tree.hh"
 #include <vector>
 
 namespace checkers
@@ -18,6 +19,8 @@ public:
     ///\param pDue time before which we must have returned
     ///\return the next state the board is in after our move
     GameState play(const GameState &pState, const Deadline &pDue);
+    tree<GameState> buildTree(GameState, int depth);
+    int heuristics(GameState gs);
 };
 
 /*namespace checkers*/ }
