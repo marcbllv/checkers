@@ -17,19 +17,18 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     int depth = 2;
     tree<GameState> decisionTree = Player::buildTree(pState, depth);
 
-    return minmax(decisionTree, depth, false);
+    return minmax(decisionTree, depth-1, false);
 }
 
 GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentPlays) {
+
+    std::cerr << "Minmax starting" << std::endl;
     // Do we stop looking for any nodes of does the tree still have children to explore ?
-    if(depth == 0 || decisionTree.is_valid(decisionTree.begin().begin())) {
-        if(depth == 0) {
-            std::cout << "depth 0" << std::endl;
-        } else {
-            std::cout << "empty tree" << std::endl;
-        }
+    //if(depth == 0 || decisionTree.is_valid(decisionTree.begin().begin())) {
+    if(depth == 0) {
         return *(decisionTree.begin());
     } else if(!opponentPlays) { // Main player plays
+        std::cerr << "Main player plays" << std::endl;
         tree<GameState>::sibling_iterator sib = decisionTree.begin().begin();
         GameState bestGS = *(decisionTree.begin().begin());
         int maxVal = Player::heuristics(bestGS), currVal;
@@ -59,6 +58,7 @@ GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentP
             }
             ++sib;
         }
+
         return worstGS;
     }
 }
@@ -95,6 +95,10 @@ int Player::heuristics(GameState gs) {
     int deltaPieces, kings, oppKings;
     uint8_t currP;
 
+    deltaPieces = 0;
+    kings = 0;
+    oppKings = 0;
+
     // Looping through board and counting
     for(int i = 0 ; i < 32 ; i++) {
         currP = gs.at(GameState::cellToRow(i), GameState::cellToCol(i));
@@ -112,6 +116,8 @@ int Player::heuristics(GameState gs) {
             }
         }
     }
+
+    std::cerr << deltaPieces << std::endl;
 
     // Combining linearly the results
     return 
