@@ -20,6 +20,7 @@ public:
     ///\return the next state the board is in after our move
     GameState play(const GameState &pState, const Deadline &pDue);
     tree<GameState> buildTree(GameState, int depth);
+    GameState minmax(tree<GameState> decisionTree, int depth, bool opponent);
     int heuristics(GameState gs);
 };
 

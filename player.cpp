@@ -14,15 +14,53 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     if (lNextStates.size() == 0) return GameState(pState, Move());
 
     // Building decision tree
-    tree<GameState> decisionTree = Player::buildTree(pState);
+    int depth = 2;
+    tree<GameState> decisionTree = Player::buildTree(pState, depth);
 
-    /* 
-     * TODO
-     * BFS & choose best game state
-     */
+    return minmax(decisionTree, depth, false);
+}
 
+GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentPlays) {
+    // Do we stop looking for any nodes of does the tree still have children to explore ?
+    if(depth == 0 || decisionTree.is_valid(decisionTree.begin().begin())) {
+        if(depth == 0) {
+            std::cout << "depth 0" << std::endl;
+        } else {
+            std::cout << "empty tree" << std::endl;
+        }
+        return *(decisionTree.begin());
+    } else if(!opponentPlays) { // Main player plays
+        tree<GameState>::sibling_iterator sib = decisionTree.begin().begin();
+        GameState bestGS = *(decisionTree.begin().begin());
+        int maxVal = Player::heuristics(bestGS), currVal;
 
-    return lNextStates[rand() % lNextStates.size()];
+        // Iterate through children
+        while(sib != decisionTree.begin().end()) {
+            currVal = Player::heuristics(Player::minmax(*sib, depth - 1, true));
+            if(currVal > maxVal) {
+                maxVal = currVal;
+                bestGS = *sib;
+            }
+            ++sib;
+        }
+
+        return bestGS;
+    } else { // Opponent plays
+        tree<GameState>::sibling_iterator sib = decisionTree.begin().begin();
+        GameState worstGS = *(decisionTree.begin().begin());
+        int minVal = Player::heuristics(worstGS), currVal;
+
+        // Iterate through children
+        while(sib != decisionTree.begin().end()) {
+            currVal = Player::heuristics(Player::minmax(*sib, depth - 1, false));
+            if(currVal < minVal) {
+                minVal = currVal;
+                worstGS = *sib;
+            }
+            ++sib;
+        }
+        return worstGS;
+    }
 }
 
 tree<GameState> Player::buildTree(GameState initState, int depth) {
@@ -41,7 +79,7 @@ tree<GameState> Player::buildTree(GameState initState, int depth) {
     for(GameState st: lNextStates) {
         currNode = decisionTree.append_child(root, st);
         // Recursively building deeper nodes
-        tree<GameState> deeperTree = Player::buildTree(*currNode, depth - 1);
+        tree<GameState> deeperTree = Player::buildTree((*currNode).reversed(), depth - 1);
         decisionTree.replace(currNode, deeperTree.begin());
     }
 
