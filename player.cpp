@@ -1,7 +1,8 @@
 #include "player.hpp"
-#include "tree.hh"
+#include "node.hpp"
 #include <cstdlib>
 #include <queue>
+#include "node.hpp"
 
 namespace checkers {
 
@@ -13,11 +14,7 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
 
     if (lNextStates.size() == 0) return GameState(pState, Move());
 
-    // Building decision tree
-    int depth = 2;
-    tree<GameState> decisionTree = Player::buildTree(pState, depth);
-
-    return minmax(decisionTree, depth-1, false);
+    
 }
 
 GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentPlays) {
@@ -61,29 +58,6 @@ GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentP
 
         return worstGS;
     }
-}
-
-tree<GameState> Player::buildTree(GameState initState, int depth) {
-
-    tree<GameState> decisionTree = tree<GameState>(initState); 
-    tree<GameState>::iterator root, currNode;
-    root = decisionTree.begin();
-
-    if(depth == 0) {
-        return decisionTree;
-    }
-
-    std::vector<GameState> lNextStates;
-    initState.findPossibleMoves(lNextStates);
-
-    for(GameState st: lNextStates) {
-        currNode = decisionTree.append_child(root, st);
-        // Recursively building deeper nodes
-        tree<GameState> deeperTree = Player::buildTree((*currNode).reversed(), depth - 1);
-        decisionTree.replace(currNode, deeperTree.begin());
-    }
-
-    return decisionTree;
 }
 
 int Player::heuristics(GameState gs) {
