@@ -1,5 +1,5 @@
-#ifndef _CHECKERS_NODE_HPP
-#define _CHECKERS_NODE_HPP
+#ifndef _CHECKERS_NODE_HPP_
+#define _CHECKERS_NODE_HPP_
 
 #include "gamestate.hpp"
 #include <vector>
@@ -13,31 +13,11 @@ class Node {
 
         Node(const GameState);
         void mkChildren();
-        void mkTree(int);
+        void mkTree(int, bool);
+
+        // For debug purposes
+        void toString(int);
 };
-
-Node::Node(const GameState gs) {
-    this->gameState = gs;
-}
-
-void Node::mkChildren() {
-    std::vector<GameState> lNextStates;
-    this->gameState.findPossibleMoves(lNextStates);
-
-    for(GameState gs : lNextStates) {
-        Node n(gs);
-        children.push_back(n);
-    }
-}
-
-void Node::mkTree(int depth) {
-    if(depth > 0) {
-        this->mkChildren();
-        for(Node n : this->children) {
-            n.mkTree(depth - 1);
-        }
-    }
-}
 
 }
 

@@ -1,5 +1,4 @@
 #include "player.hpp"
-#include "node.hpp"
 #include <cstdlib>
 #include <queue>
 #include "node.hpp"
@@ -17,21 +16,16 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     // Building tree
     int depth = 4;
     Node root(pState);
-    root.mkTree(depth);
+    root.mkTree(depth, true);
 
     return Player::minmax(root, depth, true);
 }
 
 
 GameState Player::minmax(Node root, int depth, bool max) {
-
-    std::cerr << "Minmax starts. Depth = " << depth << ", " << std::endl;
     if(depth == 0) {
         return root.gameState;
     } else if(max) { // Main player plays
-        std::cerr << "main player" << std::endl;
-
-        // Iterate through children
         GameState bestGS = root.children.front().gameState;
         int maxVal = Player::heuristics(bestGS), currVal;
 
@@ -46,8 +40,6 @@ GameState Player::minmax(Node root, int depth, bool max) {
         return bestGS;
 
     } else { // Opponent plays -> minimizing
-        std::cerr << "opponent" << std::endl;
-
         GameState worstGS = root.children.front().gameState;
         int minVal = Player::heuristics(worstGS), currVal;
 
@@ -99,8 +91,6 @@ int Player::heuristics(GameState gs) {
         deltaPieces +
         kings * 2 +
         oppKings * 2;
-
-    std::cerr << "Evaluation = " << evalutation << std::endl;
 
     // Combining linearly the results
     return  evalutation;

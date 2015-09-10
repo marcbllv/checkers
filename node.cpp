@@ -1,0 +1,48 @@
+#include "node.hpp"
+
+namespace checkers {
+
+Node::Node(GameState gs) {
+    this->gameState = gs;
+}
+
+void Node::mkChildren() {
+    std::vector<GameState> lNextStates;
+    this->gameState.findPossibleMoves(lNextStates);
+
+    for(GameState gs : lNextStates) {
+        Node n(gs);
+        children.push_back(n);
+    }
+}
+
+void Node::mkTree(int depth, bool mainPlayer) {
+    if(depth > 0) {
+        std::vector<GameState> lNextStates;
+
+        if(mainPlayer) {
+            this->gameState.findPossibleMoves(lNextStates);
+        } else {
+            this->gameState.reversed().findPossibleMoves(lNextStates);
+        }
+
+        for(GameState gs : lNextStates) {
+            Node n(gs);
+            n.mkTree(depth - 1, !mainPlayer);
+            children.push_back(n);
+        }
+    }
+}
+
+// For debug purposes
+void Node::toString(int d) {
+    std::cerr << this->gameState.toMessage() << " - " << this->children.size() << " children" << std::endl;
+
+    for(Node n : this->children) {
+        for(int i = 0 ; i < d + 1 ; ++i)
+            std::cerr << "\t";
+        n.toString(d + 1);
+    }
+}
+
+}

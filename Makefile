@@ -1,8 +1,8 @@
 CC = g++
-CXXFLAGS = -Wall -std=c++0x
+CXXFLAGS = -Wall -std=c++0x 
 
 EXE = checkers
-OBJFILES = main.o player.o gamestate.o
+OBJFILES = main.o player.o gamestate.o node.o
 
 all: $(EXE)
 
