@@ -14,8 +14,15 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
 
     if (lNextStates.size() == 0) return GameState(pState, Move());
 
+    // Building tree
+    int depth = 4;
+    Node root(pState);
+    root.mkTree(depth);
+
+
     
 }
+
 
 GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentPlays) {
 
@@ -39,6 +46,8 @@ GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentP
             }
             ++sib;
         }
+
+
 
         return bestGS;
     } else { // Opponent plays
