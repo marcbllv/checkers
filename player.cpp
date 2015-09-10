@@ -19,52 +19,46 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     Node root(pState);
     root.mkTree(depth);
 
-
-    
+    return Player::minmax(root, depth, true);
 }
 
 
-GameState Player::minmax(tree<GameState> decisionTree, int depth, bool opponentPlays) {
+GameState Player::minmax(Node root, int depth, bool max) {
 
-    std::cerr << "Minmax starting" << std::endl;
-    // Do we stop looking for any nodes of does the tree still have children to explore ?
-    //if(depth == 0 || decisionTree.is_valid(decisionTree.begin().begin())) {
+    std::cerr << "Minmax starts. Depth = " << depth << ", " << std::endl;
     if(depth == 0) {
-        return *(decisionTree.begin());
-    } else if(!opponentPlays) { // Main player plays
-        std::cerr << "Main player plays" << std::endl;
-        tree<GameState>::sibling_iterator sib = decisionTree.begin().begin();
-        GameState bestGS = *(decisionTree.begin().begin());
+        return root.gameState;
+    } else if(max) { // Main player plays
+        std::cerr << "main player" << std::endl;
+
+        // Iterate through children
+        GameState bestGS = root.children.front().gameState;
         int maxVal = Player::heuristics(bestGS), currVal;
 
-        // Iterate through children
-        while(sib != decisionTree.begin().end()) {
-            currVal = Player::heuristics(Player::minmax(*sib, depth - 1, true));
+        for(std::vector<Node>::iterator node = root.children.begin() ; 
+                node != root.children.end() ; ++node) {
+            currVal = Player::heuristics(Player::minmax(*node, depth - 1, false));
             if(currVal > maxVal) {
                 maxVal = currVal;
-                bestGS = *sib;
+                bestGS = (*node).gameState;
             }
-            ++sib;
         }
-
-
-
         return bestGS;
-    } else { // Opponent plays
-        tree<GameState>::sibling_iterator sib = decisionTree.begin().begin();
-        GameState worstGS = *(decisionTree.begin().begin());
+
+    } else { // Opponent plays -> minimizing
+        std::cerr << "opponent" << std::endl;
+
+        GameState worstGS = root.children.front().gameState;
         int minVal = Player::heuristics(worstGS), currVal;
 
-        // Iterate through children
-        while(sib != decisionTree.begin().end()) {
-            currVal = Player::heuristics(Player::minmax(*sib, depth - 1, false));
+        for(std::vector<Node>::iterator node = root.children.begin() ; 
+                node != root.children.end() ; ++node) {
+            currVal = Player::heuristics(Player::minmax(*node, depth - 1, false));
             if(currVal < minVal) {
                 minVal = currVal;
-                worstGS = *sib;
+                worstGS = (*node).gameState;
             }
-            ++sib;
         }
-
         return worstGS;
     }
 }
@@ -75,6 +69,7 @@ int Player::heuristics(GameState gs) {
      * Counting pieces
      * Counting kings
      */
+    int evalutation;
     int deltaPieces, kings, oppKings;
     uint8_t currP;
 
@@ -100,13 +95,15 @@ int Player::heuristics(GameState gs) {
         }
     }
 
-    std::cerr << deltaPieces << std::endl;
-
-    // Combining linearly the results
-    return 
+    evalutation = 
         deltaPieces +
         kings * 2 +
         oppKings * 2;
+
+    std::cerr << "Evaluation = " << evalutation << std::endl;
+
+    // Combining linearly the results
+    return  evalutation;
 }
 
 /*namespace checkers*/ }

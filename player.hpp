@@ -5,7 +5,7 @@
 #include "deadline.hpp"
 #include "move.hpp"
 #include "gamestate.hpp"
-#include "tree.hh"
+#include "node.hpp"
 #include <vector>
 
 namespace checkers
@@ -19,8 +19,7 @@ public:
     ///\param pDue time before which we must have returned
     ///\return the next state the board is in after our move
     GameState play(const GameState &pState, const Deadline &pDue);
-    tree<GameState> buildTree(GameState, int depth);
-    GameState minmax(tree<GameState> decisionTree, int depth, bool opponent);
+    GameState minmax(Node root, int depth, bool max);
     int heuristics(GameState gs);
 };
 

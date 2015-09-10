@@ -8,7 +8,7 @@ namespace checkers {
 
 class Node {
     public:
-        GameState gs;
+        GameState gameState;
         std::vector<Node> children;
 
         Node(const GameState);
@@ -16,9 +16,13 @@ class Node {
         void mkTree(int);
 };
 
+Node::Node(const GameState gs) {
+    this->gameState = gs;
+}
+
 void Node::mkChildren() {
     std::vector<GameState> lNextStates;
-    gs.findPossibleMoves(lNextStates);
+    this->gameState.findPossibleMoves(lNextStates);
 
     for(GameState gs : lNextStates) {
         Node n(gs);
@@ -33,10 +37,6 @@ void Node::mkTree(int depth) {
             n.mkTree(depth - 1);
         }
     }
-}
-
-Node::Node(const GameState gameState) {
-    this->gs = gameState;
 }
 
 }
