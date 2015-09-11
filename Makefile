@@ -11,7 +11,7 @@ $(EXE): $(OBJFILES)
 
 game:
 	rm -f pipe && mkfifo pipe
-	./checkers init verbose < pipe | ./random > pipe
+	./checkers init verbose < pipe | ./randomPlayer > pipe
 
 clean:
 	rm -f $(EXE)

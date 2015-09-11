@@ -4,5 +4,8 @@ checkers
 # Compiled Object files
 *.o
 
+# Other
+original_src
+
 #vim weird files
 *.swp
