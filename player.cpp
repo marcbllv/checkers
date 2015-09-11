@@ -5,6 +5,8 @@
 
 namespace checkers {
 
+static int globalCount = 0;
+
 GameState Player::play(const GameState &pState,const Deadline &pDue) {
     //std::cerr << "Processing " << pState.toMessage() << std::endl;
 
@@ -18,12 +20,16 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     Node root(pState);
     root.mkTree(depth, true);
 
+    ++globalCount;
+    std::cerr << "Tour n° : " << globalCount << std::endl;
+
     return Player::minmax(root, depth, true);
 }
 
 
 GameState Player::minmax(Node root, int depth, bool max) {
-    if(depth == 0) {
+
+    if(depth == 0 || root.children.empty()) {
         return root.gameState;
     } else if(max) { // Main player plays
         GameState bestGS = root.children.front().gameState;
@@ -62,24 +68,26 @@ int Player::heuristics(GameState gs) {
      * Counting kings
      */
     int evalutation;
-    int deltaPieces, kings, oppKings;
+    int pieces, kings;
+    int oppPieces, oppKings;
     uint8_t currP;
 
-    deltaPieces = 0;
+    pieces = 0;
     kings = 0;
+    oppPieces = 0;
     oppKings = 0;
 
     // Looping through board and counting
     for(int i = 0 ; i < 32 ; i++) {
         currP = gs.at(GameState::cellToRow(i), GameState::cellToCol(i));
         if(currP & CELL_WHITE) {
-            deltaPieces++;
+            ++pieces;
 
             if(currP & CELL_KING) {
                 kings++;
             }
         } else if(currP & CELL_RED) {
-            deltaPieces--;
+            ++oppPieces;
 
             if(currP & CELL_KING) {
                 oppKings++;
@@ -88,9 +96,10 @@ int Player::heuristics(GameState gs) {
     }
 
     evalutation = 
-        deltaPieces +
+        pieces - oppPieces +
         kings * 2 +
-        oppKings * 2;
+        oppKings * 2
+        + 5000 * (oppPieces == 0);
 
     // Combining linearly the results
     return  evalutation;
