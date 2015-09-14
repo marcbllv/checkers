@@ -2,64 +2,70 @@
 
 namespace checkers {
 
-static int nbreNode;
+constexpr int Heuristics::COEFFROWS[8];
+constexpr int Heuristics::COEFFROWS_OPP[8];
+constexpr int Heuristics::COEFFCOLS[8];
 
-// This function is called by the player. It returns the best state,
-// using the negamax function below
-GameState Heuristics::bestGameState(Node root) {
-
-    nbreNode = 0;
-
-    if(root.children.empty()) {
-        return root.gameState;
-    } else { // Perform negamax and return the best gamestate
-        int depth = Heuristics::DEPTH;
-        int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
-
-        GameState bestGS = root.children.front().gameState;
-        int maxVal = -Heuristics::negamax(bestGS, depth - 1, true, alpha, beta), currVal;
-
-        for(Node n : root.children) {
-            currVal = -negamax(n, depth - 1, true, alpha, beta);
-            if(currVal > maxVal) {
-                maxVal = currVal;
-                bestGS = n.gameState;
-            }
-        }
-        return bestGS;
-    }
-}
-
-int Heuristics::negamax(Node root, int depth, bool color, int alpha, int beta) {
+int Heuristics::minmax(Node root, bool color, 
+        Node &bestNode, bool updateBestNode, int alpha, int beta) {
 
     if(root.children.empty()) {
-        return Heuristics::evaluate(root.gameState) * (color ? -1 : 1);
+        ++nodesSeen;
+        return Heuristics::evaluate(root.gameState);
     } else {
-        int maxVal = -Heuristics::INFINITY, currVal;
 
-        for(Node n : root.children) {
-            currVal = -negamax(n, depth - 1, !color, -beta, -alpha);
+        if(color) { // Main player : maximizing
+            int maxVal = -Heuristics::INFINITY;
+            int currVal;
 
-            // No pruning
-            if(currVal > maxVal) {
-                maxVal = currVal;
-            }
+            for(Node n : root.children) {
+                currVal = Heuristics::minmax(n, !color, bestNode, false, alpha, beta);
+                if(currVal > maxVal) {
+                    maxVal = currVal;
 
-            // With alpha-beta pruning
-            if(currVal > maxVal) {
-                maxVal = currVal;
-                if(maxVal > alpha) {
-                    alpha = maxVal;
-                    if(maxVal > beta) {
-                        return maxVal;
+                    // To get the best node at the top of the tree
+                    if(updateBestNode) {
+                        bestNode.gameState = n.gameState;
+                    }
+
+                    // Alpha cut ?
+                    if(alpha < maxVal) {
+                        alpha = maxVal;
+                        if(alpha >= beta) {
+                            return maxVal;
+                        }
                     }
                 }
             }
+
+            return maxVal;
+        } else {
+            int minVal = Heuristics::INFINITY;
+            int currVal;
+
+            for(Node n : root.children) {
+                currVal = Heuristics::minmax(n, !color, bestNode, false, alpha, beta);
+                if(currVal < minVal) {
+                    minVal = currVal;
+
+                    // To get the best node at the top of the tree
+                    if(updateBestNode) {
+                        bestNode.gameState = n.gameState;
+                    }
+
+                    // Beta cut ?
+                    if(beta > minVal) {
+                        beta = minVal;
+                        if(alpha >= beta) {
+                            return minVal;
+                        }
+                    }
+                }
+            }
+
+            return minVal;
         }
-
-        return maxVal;
     }
-
 }
 
 int Heuristics::evaluate(GameState gs) {
@@ -74,12 +80,9 @@ int Heuristics::evaluate(GameState gs) {
 
     int pRow[8]        = {0, 0, 0, 0, 0, 0, 0, 0};
     int pRowOpp[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
-    int coeffRow[8]    = {15, 8, 8, 2, 7, 2, 4, 10};
-    int coeffRowOpp[8] = {10, 4, 2, 7, 2, 8, 8, 15};
 
     int pCol[8]        = {0, 0, 0, 0, 0, 0, 0, 0};
     int pColOpp[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
-    int coeffCol[8]    = {10, 0, 0, 0, 0, 0, 0, 10};
 
     uint8_t currP;
 
@@ -114,21 +117,21 @@ int Heuristics::evaluate(GameState gs) {
 
     // Combining row coeffs
     for(int i = 0 ; i < 8 ; i++) {
-        evaluation += pRow[i] * coeffRow[i];
-        evaluation -= pRowOpp[i] * coeffRowOpp[i];
+        evaluation += pRow[i] * Heuristics::COEFFROWS[i];
+        evaluation -= pRowOpp[i] * Heuristics::COEFFROWS_OPP[i];
     }
 
     // Columns coeffs
     for(int i = 0 ; i < 8 ; i++) {
-        evaluation += pCol[i] * coeffCol[i];
-        evaluation -= pColOpp[i] * coeffCol[i];
+        evaluation += pCol[i] * Heuristics::COEFFCOLS[i];
+        evaluation -= pColOpp[i] * Heuristics::COEFFCOLS[i];
     }
 
     evaluation = 
-        pieces * 100 - oppPieces * 40 +
-        kings * 200 - oppKings * 100;
+        pieces * Heuristics::PIECE - oppPieces * Heuristics::OPPPIECE +
+        kings * Heuristics::KING - oppKings * Heuristics::OPPKING;
 
-    // Infinite score (or -Infinite) if it's a winning or losing game state
+    // Infinite score (or -Infinity) if it's a winning or losing game state
     evaluation += (oppPieces == 0 ? Heuristics::INFINITY : 0);
     evaluation -= (pieces == 0 ? Heuristics::INFINITY : 0);
 

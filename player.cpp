@@ -6,8 +6,10 @@
 
 namespace checkers {
 
+int nodesSeen = 0;
+
 GameState Player::play(const GameState &pState,const Deadline &pDue) {
-    //std::cerr << "Processing " << pState.toMessage() << std::endl;
+    nodesSeen = 0;
 
     std::vector<GameState> lNextStates;
     pState.findPossibleMoves(lNextStates);
@@ -18,8 +20,14 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     Node root(pState);
     root.mkTree(Heuristics::DEPTH, true);
 
-    GameState g = Heuristics::bestGameState(root);
-    return g;
+    // Computing minmax algorithm
+    Node bestNode;
+    int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
+    Heuristics::minmax(root, true, bestNode, true, alpha, beta);
+
+    std::cerr << nodesSeen << " nodes seen" << std::endl;
+
+    return bestNode.gameState;
 }
 
 /*namespace checkers*/ }
