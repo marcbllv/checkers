@@ -1,9 +1,18 @@
 #include "node.hpp"
+#include "heuristics.hpp"
 
 namespace checkers {
 
+Node::Node() {
+    this->gameState = GameState();
+    this->alpha = -Heuristics::INFINITY;
+    this->beta = Heuristics::INFINITY;
+}
+
 Node::Node(GameState gs) {
     this->gameState = gs;
+    this->alpha = -Heuristics::INFINITY;
+    this->beta = Heuristics::INFINITY;
 }
 
 void Node::mkChildren() {
@@ -27,16 +36,27 @@ void Node::mkTree(int depth, bool mainPlayer) {
         }
 
         for(GameState gs : lNextStates) {
-            Node n(gs);
-            n.mkTree(depth - 1, !mainPlayer);
-            children.push_back(n);
+            if(mainPlayer) {
+                Node n(gs);
+                n.mkTree(depth - 1, !mainPlayer);
+                children.push_back(n);
+            } else {
+                Node n(gs.reversed());
+                n.mkTree(depth - 1, !mainPlayer);
+                children.push_back(n);
+            }
         }
     }
 }
 
 // For debug purposes
+void Node::toString() {
+    this->toString(0);
+}
+
 void Node::toString(int d) {
-    std::cerr << this->gameState.toMessage() << " - " << this->children.size() << " children" << std::endl;
+    std::cerr << this->gameState.toMessage() << " - Eval = " 
+              << Heuristics::evaluate(this->gameState) << std::endl;
 
     for(Node n : this->children) {
         for(int i = 0 ; i < d + 1 ; ++i)

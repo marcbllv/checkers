@@ -19,8 +19,6 @@ public:
     ///\param pDue time before which we must have returned
     ///\return the next state the board is in after our move
     GameState play(const GameState &pState, const Deadline &pDue);
-    GameState minmax(Node root, int depth, bool max);
-    int heuristics(GameState gs);
 };
 
 /*namespace checkers*/ }
