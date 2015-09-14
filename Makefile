@@ -1,7 +1,7 @@
 CC = g++
 CXXFLAGS = -Wall -std=c++0x 
 
-EXE = checkers2
+EXE = checkers
 OBJFILES = main.o player.o gamestate.o node.o heuristics.o
 
 all: $(EXE)
@@ -11,11 +11,15 @@ $(EXE): $(OBJFILES)
 
 game:
 	rm -f pipe && mkfifo pipe
-	./checkers2 init verbose < pipe | ./randomPlayer > pipe
+	./$(EXE) init verbose < pipe | ./agent1 > pipe
 
 game0:
 	rm -f pipe && mkfifo pipe
-	./checkers init verbose < pipe | ./agent0 > pipe
+	./$(EXE) init verbose < pipe | ./agent0 > pipe
+
+gamerand:
+	rm -f pipe && mkfifo pipe
+	./$(EXE) init verbose < pipe | ./randomPlayer > pipe
 
 clean:
 	rm -f $(EXE)
