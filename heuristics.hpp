@@ -22,7 +22,7 @@ class Heuristics {
         static const int INFINITY = 100000;
         static const int DEPTH    = 6;
 
-        static int minmax(Node, bool, const Deadline&, Node&, bool, int, int);
+        static int minmax(Node, bool, const Deadline&, GameState&, bool, int, int);
         static int evaluate(GameState, uint8_t);
 };
 
