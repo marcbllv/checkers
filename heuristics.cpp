@@ -1,5 +1,4 @@
 #include "heuristics.hpp"
-#include "player.hpp"
 
 namespace checkers {
 
@@ -26,6 +25,32 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
            if(currVal > maxVal) {
                maxVal = currVal;
                bestGS = n.gameState;
+           }
+       }
+
+       std::vector<pid_t> pids(root.children.size());
+       std::vector<int> vals(root.children.size());
+       int val;
+
+       for(unsigned int i = 0 ; i < root.children.size() ; ++i) {
+           pids[i] = vfork();
+
+           if(pids[i] == 0) {
+               val = Heuristics::minmax(root.children[i], false, pDue, alpha, beta);
+               exit(val);
+           }
+       }
+
+       for(unsigned int i = 0 ; i < root.children.size() ; ++i) {
+           wait(&val);
+           vals[i] = val;
+       }
+
+       for(unsigned int i = 0 ; i < root.children.size() ; ++i) {
+           currVal = vals[i];
+           if(currVal > maxVal) {
+               maxVal = currVal;
+               bestGS = root.children[i].gameState;
            }
        }
 

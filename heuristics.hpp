@@ -4,7 +4,10 @@
 #include "gamestate.hpp"
 #include "node.hpp"
 #include "deadline.hpp"
-
+#include "player.hpp"
+#include <vector>
+#include <unistd.h>
+#include <sys/wait.h>
 
 namespace checkers {
 extern int nodesSeen;
@@ -20,7 +23,7 @@ class Heuristics {
         static constexpr int COEFFCOLS[8]     = {10, 0, 0, 0, 0, 0, 0, 10};
 
         static const int INFINITY = 100000;
-        static const int DEPTH    = 5;
+        static const int DEPTH    = 6;
 
         static GameState topMinmax(Node, const Deadline&);
         static int minmax(Node, bool, const Deadline&, int, int);
