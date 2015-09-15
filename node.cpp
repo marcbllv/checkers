@@ -55,8 +55,7 @@ void Node::toString() {
 }
 
 void Node::toString(int d) {
-    std::cerr << this->gameState.toMessage() << " - Eval = " 
-              << Heuristics::evaluate(this->gameState) << std::endl;
+    std::cerr << this->gameState.toMessage() << std::endl;
 
     for(Node n : this->children) {
         for(int i = 0 ; i < d + 1 ; ++i)

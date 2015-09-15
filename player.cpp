@@ -6,15 +6,25 @@
 
 namespace checkers {
 
-int nodesSeen = 0;
+uint8_t Player::color = 0;
 
-GameState Player::play(const GameState &pState,const Deadline &pDue) {
+GameState Player::play(const GameState &pState, const Deadline &pDue) {
+    if(pState.getNextPlayer() == CELL_RED) {
+        Player::color = CELL_RED;
+    } else {
+        Player::color = CELL_WHITE;
+    }
+
     nodesSeen = 0;
 
     std::vector<GameState> lNextStates;
     pState.findPossibleMoves(lNextStates);
 
-    if (lNextStates.size() == 0) return GameState(pState, Move());
+    if(lNextStates.size() == 0) {
+        return GameState(pState, Move());
+    } else if(lNextStates.size() == 1) {
+        return lNextStates.front();
+    }
 
     // Building tree
     Node root(pState);
@@ -23,10 +33,12 @@ GameState Player::play(const GameState &pState,const Deadline &pDue) {
     // Computing minmax algorithm
     Node bestNode;
     int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
-    Heuristics::minmax(root, true, bestNode, true, alpha, beta);
+    Heuristics::minmax(root, true, pDue, bestNode, true, alpha, beta);
 
-    std::cerr << nodesSeen << " nodes seen" << std::endl;
+    std::cerr << "Nodes seen : " << nodesSeen << std::endl;
+    std::cerr << "\tTime :" << (pDue.getSeconds() - Deadline::now().getSeconds()) << std::endl;
 
+    std::cerr << bestNode.gameState.toMessage() << std::endl;
     return bestNode.gameState;
 }
 
