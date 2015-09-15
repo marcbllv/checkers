@@ -31,13 +31,7 @@ GameState Player::play(const GameState &pState, const Deadline &pDue) {
     root.mkTree(Heuristics::DEPTH, true);
 
     // Computing minmax algorithm
-    GameState bestGS;
-    int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
-    Heuristics::minmax(root, true, pDue, bestGS, true, alpha, beta);
-
-    std::cerr << "Nodes seen : " << nodesSeen << std::endl;
-    std::cerr << "\tTime :" << (pDue.getSeconds() - Deadline::now().getSeconds()) << std::endl;
-
+    GameState bestGS = Heuristics::topMinmax(root, pDue);
     return bestGS;
 }
 

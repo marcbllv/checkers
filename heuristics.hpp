@@ -20,9 +20,10 @@ class Heuristics {
         static constexpr int COEFFCOLS[8]     = {10, 0, 0, 0, 0, 0, 0, 10};
 
         static const int INFINITY = 100000;
-        static const int DEPTH    = 6;
+        static const int DEPTH    = 5;
 
-        static int minmax(Node, bool, const Deadline&, GameState&, bool, int, int);
+        static GameState topMinmax(Node, const Deadline&);
+        static int minmax(Node, bool, const Deadline&, int, int);
         static int evaluate(GameState, uint8_t);
 };
 

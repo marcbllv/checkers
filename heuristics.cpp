@@ -9,8 +9,32 @@ constexpr int Heuristics::COEFFROWS[8];
 constexpr int Heuristics::COEFFROWS_OPP[8];
 constexpr int Heuristics::COEFFCOLS[8];
 
+// Top level minmax
+// Special treatment for not returning a value but a gamestate
+GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
+   if(root.children.empty()) {
+      return root.gameState;
+   } else {
+       int maxVal = -Heuristics::INFINITY;
+       int currVal;
+       GameState bestGS;
+       int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
+
+       for(Node n : root.children) {
+           currVal = Heuristics::minmax(n, false, pDue, alpha, beta);
+
+           if(currVal > maxVal) {
+               maxVal = currVal;
+               bestGS = n.gameState;
+           }
+       }
+
+       return bestGS;
+   } 
+}
+
 int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
-        GameState &bestGS, bool updateBestNode, int alpha, int beta) {
+        int alpha, int beta) {
 
     if(root.children.empty()) {
         ++nodesSeen;
@@ -18,14 +42,13 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
     } else {
 
         if(color) { // Main player : maximizing
-            int maxVal = -Heuristics::INFINITY, bestNodeIdx = 0;
+            int maxVal = -Heuristics::INFINITY;
             int currVal;
 
-            for(unsigned int i = 0 ; i < root.children.size() ; ++i) {
-                currVal = Heuristics::minmax(root.children[i], !color, pDue, bestGS, false, alpha, beta);
+            for(Node n : root.children) {
+                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
                 if(currVal > maxVal) {
                     maxVal = currVal;
-                    bestNodeIdx = i;
 
                     // Alpha cut ?
                     if(alpha < maxVal) {
@@ -37,21 +60,15 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
                 }
             }
 
-            // To get the best node at the top of the tree
-            if(updateBestNode) {
-                bestGS = root.children[bestNodeIdx].gameState;
-            }
-
             return maxVal;
         } else {
-            int minVal = Heuristics::INFINITY, worstNodeIdx = 0;
+            int minVal = Heuristics::INFINITY;
             int currVal;
 
-            for(unsigned int i = 0 ; i < root.children.size() ; ++i) {
-                currVal = Heuristics::minmax(root.children[i], !color, pDue, bestGS, false, alpha, beta);
+            for(Node n : root.children) {
+                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
                 if(currVal < minVal) {
                     minVal = currVal;
-                    worstNodeIdx = i;
 
                     // Beta cut ?
                     if(beta > minVal) {
@@ -61,11 +78,6 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
                         }
                     }
                 }
-            }
-
-            // To get the best node at the top of the tree
-            if(updateBestNode) {
-                bestGS = root.children[worstNodeIdx].gameState;
             }
 
             return minVal;
