@@ -6,8 +6,9 @@ namespace checkers {
 int nodesSeen = 0;
 
 constexpr int Heuristics::COEFFROWS[8];
-constexpr int Heuristics::COEFFROWS_OPP[8];
 constexpr int Heuristics::COEFFCOLS[8];
+constexpr unsigned int Heuristics::CENTER[6];
+constexpr unsigned int Heuristics::MAINDIAG[8];
 
 // Top level minmax
 // Special treatment for not returning a value but a gamestate
@@ -97,14 +98,6 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
         CELL_OPP    = CELL_WHITE;
     }
 
-    /*
-     * Counting pieces
-     * Counting kings
-     */
-    int evaluation;
-    int pieces, kings;
-    int oppPieces, oppKings;
-
     int pRow[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
     int pRowOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -113,14 +106,14 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
 
     uint8_t currP;
 
-    evaluation     = 0;
-    pieces         = 0;
-    kings          = 0;
-    oppPieces      = 0;
-    oppKings       = 0;
+    int evaluation   = 0;
+    int pieces       = 0; int oppPieces       = 0;
+    int kings        = 0; int oppKings        = 0;
+    int centralKings = 0; int centralKingsOpp = 0;
+    int diagKings    = 0; int diagKingsOpp    = 0;
 
     // Looping through board and counting
-    for(int i = 0 ; i < 32 ; i++) {
+    for(unsigned int i = 0 ; i < 32 ; ++i) {
         currP = gs.at(GameState::cellToRow(i), GameState::cellToCol(i));
         if(currP & CELL_PLAYER) {
             pieces++;
@@ -128,6 +121,20 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
 
             if(currP & CELL_KING) {
                 kings++;
+                // Is king centrally positionned ?
+                for(unsigned int j = 0 ; j < 6 ; ++j) {
+                    if(i == CENTER[j]) {
+                        ++centralKings;
+                        break;
+                    }
+                }
+                // Is king on the main diagonal ?
+                for(unsigned int j = 0 ; j < 8 ; ++j) {
+                    if(i == MAINDIAG[j]) {
+                        ++diagKings;
+                        break;
+                    }
+                }
             } else { // Normal piece
                 pRow[GameState::cellToRow(currP)] += 1;
             }
@@ -136,6 +143,20 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
 
             if(currP & CELL_KING) {
                 oppKings++;
+                 // Is king centrally positionned ?
+                for(unsigned int j = 0 ; j < 6 ; ++j) {
+                    if(i == CENTER[j]) {
+                        ++centralKingsOpp;
+                        break;
+                    }
+                }
+                // Is king on the main diagonal ?
+                for(unsigned int j = 0 ; j < 8 ; ++j) {
+                    if(i == MAINDIAG[j]) {
+                        ++diagKingsOpp;
+                        break;
+                    }
+                }
             } else { // Normal piece
                 pRowOpp[GameState::cellToRow(currP)] += 1;
             }
@@ -143,16 +164,54 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
     }
 
     // Early / mid game
-    if((pieces - oppPieces) < 4 || oppPieces > 4) {
+    //if((pieces - oppPieces) < 4 || oppPieces > 4) {
+    if(true) {
         // Combining row coeffs
         for(int i = 0 ; i < 8 ; i++) {
-            evaluation += pRow[i] * Heuristics::COEFFROWS[i];
+            if(CELL_PLAYER == CELL_RED) {
+                //evaluation += pRow[i] * Heuristics::COEFFROWS[i];
+                //evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[7-i];
+
+                // The closer to prom line (ie: 7-i small), the better. 
+                // (The further for opponenent)
+                evaluation -= pRow[i] * (7 - i); 
+                evaluation += pRowOpp[i] * i;
+            } else {
+                //evaluation += pRow[i] * Heuristics::COEFFROWS[7-i];
+                //evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[i];
+                
+                // The closer to prom line (ie: i small), the better. 
+                // (The further for opponenent)
+                evaluation -= pRow[i] * i;
+                evaluation += pRowOpp[i] * (7 - i);
+            }
         }
+
+        if(CELL_PLAYER == CELL_RED) {
+            // Back pieces
+            evaluation += Heuristics::BACKPIECE * pRow[0];
+            evaluation -= Heuristics::BACKPIECE * pRowOpp[7];
+        } else {
+            // Back pieces
+            evaluation += Heuristics::BACKPIECE * pRow[7];
+            evaluation -= Heuristics::BACKPIECE * pRowOpp[0];
+        }
+
+        // Kings position
+        evaluation -= Heuristics::CENTRALKING * centralKings;
+        evaluation += Heuristics::CENTRALKING * centralKingsOpp;
+        evaluation += Heuristics::CENTRALKING * diagKings;
+        evaluation -= Heuristics::CENTRALKING * diagKingsOpp;
 
         // Columns coeffs
         for(int i = 0 ; i < 8 ; i++) {
             evaluation += pCol[i] * Heuristics::COEFFCOLS[i];
             evaluation -= pColOpp[i] * Heuristics::COEFFCOLS[i];
+        }
+        // Rows coeffs
+        for(int i = 0 ; i < 8 ; i++) {
+            evaluation += pCol[i] * Heuristics::COEFFROWS[i];
+            evaluation -= pColOpp[i] * Heuristics::COEFFROWS[i];
         }
     }
 
