@@ -47,6 +47,10 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
             int currVal;
 
             for(Node n : root.children) {
+                if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
+                    return maxVal;
+                }
+
                 currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
                 if(currVal > maxVal) {
                     maxVal = currVal;
@@ -67,6 +71,10 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
             int currVal;
 
             for(Node n : root.children) {
+                if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
+                    return minVal;
+                }
+
                 currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
                 if(currVal < minVal) {
                     minVal = currVal;
@@ -100,6 +108,8 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
 
     int pRow[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
     int pRowOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int kRow[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int kRowOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     int pCol[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
     int pColOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -120,6 +130,7 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
             pCol[GameState::cellToCol(currP)] += 1;
 
             if(currP & CELL_KING) {
+                kRow[GameState::cellToRow(currP)] += 1;
                 kings++;
                 // Is king centrally positionned ?
                 for(unsigned int j = 0 ; j < 6 ; ++j) {
@@ -164,21 +175,20 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
     }
 
     // Early / mid game
-    //if((pieces - oppPieces) < 4 || oppPieces > 4) {
-    if(true) {
+    if((pieces - oppPieces) < 4 || oppPieces > 4) {
         // Combining row coeffs
         for(int i = 0 ; i < 8 ; i++) {
             if(CELL_PLAYER == CELL_RED) {
-                //evaluation += pRow[i] * Heuristics::COEFFROWS[i];
-                //evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[7-i];
+                evaluation += pRow[i] * Heuristics::COEFFROWS[i];
+                evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[7-i];
 
                 // The closer to prom line (ie: 7-i small), the better. 
                 // (The further for opponenent)
                 evaluation -= pRow[i] * (7 - i); 
                 evaluation += pRowOpp[i] * i;
             } else {
-                //evaluation += pRow[i] * Heuristics::COEFFROWS[7-i];
-                //evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[i];
+                evaluation += pRow[i] * Heuristics::COEFFROWS[7-i];
+                evaluation -= pRowOpp[i] * Heuristics::COEFFROWS[i];
                 
                 // The closer to prom line (ie: i small), the better. 
                 // (The further for opponenent)
@@ -198,8 +208,8 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
         }
 
         // Kings position
-        evaluation -= Heuristics::CENTRALKING * centralKings;
-        evaluation += Heuristics::CENTRALKING * centralKingsOpp;
+        evaluation += Heuristics::CENTRALKING * centralKings;
+        evaluation -= Heuristics::CENTRALKING * centralKingsOpp;
         evaluation += Heuristics::CENTRALKING * diagKings;
         evaluation -= Heuristics::CENTRALKING * diagKingsOpp;
 
@@ -208,16 +218,19 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
             evaluation += pCol[i] * Heuristics::COEFFCOLS[i];
             evaluation -= pColOpp[i] * Heuristics::COEFFCOLS[i];
         }
-        // Rows coeffs
+        // Columns coeffs
         for(int i = 0 ; i < 8 ; i++) {
-            evaluation += pCol[i] * Heuristics::COEFFROWS[i];
-            evaluation -= pColOpp[i] * Heuristics::COEFFROWS[i];
+            evaluation += pRow[i] * Heuristics::COEFFCOLS[i];
+            evaluation -= pRowOpp[i] * Heuristics::COEFFCOLS[i];
+            evaluation += kRow[i] * Heuristics::COEFFCOLS[i];
+            evaluation -= kRowOpp[i] * Heuristics::COEFFCOLS[i];
         }
     }
 
-    evaluation = 
+    evaluation += 
         pieces * Heuristics::PIECE - oppPieces * Heuristics::OPPPIECE +
-        kings * Heuristics::KING - oppKings * Heuristics::OPPKING;
+        kings * Heuristics::KING - oppKings * Heuristics::OPPKING +
+        (pieces - oppPieces) * (pieces - oppPieces) * (pieces - oppPieces > 0 ? 1 : -1);
 
     // Infinite score (or -Infinity) if it's a winning or losing game state
     evaluation += (oppPieces == 0 ? Heuristics::INFINITY : 0);
