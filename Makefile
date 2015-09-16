@@ -17,6 +17,10 @@ game0:
 	rm -f pipe && mkfifo pipe
 	./$(EXE) init verbose < pipe | ./agent0 > pipe
 
+game1:
+	rm -f pipe && mkfifo pipe
+	./v8 init verbose < pipe | ./$(EXE) > pipe
+
 gamerand:
 	rm -f pipe && mkfifo pipe
 	./$(EXE) init verbose < pipe | ./randomPlayer > pipe
