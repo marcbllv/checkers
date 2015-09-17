@@ -19,11 +19,13 @@ GameState Heuristics::topMinmax(GameState root, const Deadline &pDue) {
     int depth = Heuristics::DEPTH;
     int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
-    std::vector<GameState> children;
-    Player::nextMoves(children, 1);
+    std::vector<GameState> nextStates;
+    Player::nextMoves(root, 1, nextStates);
 
-    for(GameState n : children) {
+    std::cerr << "size : " << nextStates.size() << std::endl;
+    for(GameState n : nextStates) {
         currVal = Heuristics::minmax(n, true, depth, pDue, alpha, beta);
+        std::cerr << "val : " << currVal << std::endl;
 
         if(currVal > maxVal) {
             maxVal = currVal;
@@ -49,12 +51,15 @@ int Heuristics::minmax(GameState root, bool color, int depth,
         //    return Heuristics::evaluate(root.gameState, Player::color); 
         //}
     } else {
+        // Compute possible moves :
+        std::vector<GameState> nextStates;
+        Player::nextMoves(root, color, nextStates);
 
         if(color) { // Main player : maximizing
             int maxVal = -Heuristics::INFINITY;
             int currVal;
 
-            for(GameState n : children) {
+            for(GameState n : nextStates) {
                 if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
                     return maxVal;
                 }
@@ -78,7 +83,7 @@ int Heuristics::minmax(GameState root, bool color, int depth,
             int minVal = Heuristics::INFINITY;
             int currVal;
 
-            for(GameState n : children) {
+            for(GameState n : nextStates) {
                 if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
                     return minVal;
                 }

@@ -20,7 +20,7 @@ public:
     ///\return the next state the board is in after our move
     GameState play(const GameState &pState, const Deadline &pDue);
     static uint8_t color;
-    static std::vector<GameState> nextMoves(GameState gameState, bool mainPlayer);
+    static void nextMoves(GameState gameState, bool mainPlayer, std::vector<GameState>& nextStates);
 };
 
 /*namespace checkers*/ }
