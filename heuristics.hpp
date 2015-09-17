@@ -24,7 +24,7 @@ class Heuristics {
         static const int MAINDIAGKINGS            = 20;
 
         static const int INFINITY = 100000;
-        static const int DEPTH    = 6;
+        static const int DEPTH    = 7;
 
         static GameState topMinmax(Node, const Deadline&);
         static int minmax(Node, int, bool, const Deadline&, int, int);

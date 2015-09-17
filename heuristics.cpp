@@ -22,8 +22,7 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
        int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
        for(Node n : root.children) {
-           currVal = Heuristics::minmax(n, 6, false, pDue, alpha, beta);
-           std::cerr << currVal << std::endl;
+           currVal = Heuristics::minmax(n, Heuristics::DEPTH - 1, false, pDue, alpha, beta);
            if(currVal > maxVal) {
                maxVal = currVal;
                bestGS = n.gameState;
@@ -37,12 +36,11 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
 int Heuristics::minmax(Node root, int depth, bool color, const Deadline &pDue,
         int alpha, int beta) {
 
-    if(depth) {
+    if(depth == 0) {
         ++nodesSeen;
         return Heuristics::evaluate(root.gameState, Player::color); 
     } else {
 
-        std::cerr << "node seen" << std::endl;
         root.mkTree(1, color);
 
         if(color) { // Main player : maximizing

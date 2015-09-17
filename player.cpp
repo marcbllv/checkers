@@ -32,6 +32,7 @@ GameState Player::play(const GameState &pState, const Deadline &pDue) {
 
     // Computing minmax algorithm
     GameState bestGS = Heuristics::topMinmax(root, pDue);
+    std::cerr << "Nodes seen: " << nodesSeen  << std::endl;
     return bestGS;
 }
 
