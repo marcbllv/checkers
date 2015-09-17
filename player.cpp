@@ -36,4 +36,22 @@ GameState Player::play(const GameState &pState, const Deadline &pDue) {
     return bestGS;
 }
 
+std::vector<GameState> Player::nextMoves(GameState gameState, bool mainPlayer) {
+    std::vector<GameState> lNextStates;
+
+    if(mainPlayer) {
+        gameState.findPossibleMoves(lNextStates);
+    } else {
+        gameState.reversed().findPossibleMoves(lNextStates);
+    }
+
+    if(!mainPlayer) {
+        for(GameState gs : lNextStates) {
+            gs = gs.reversed();
+        }
+    }
+
+    return lNextStates;
+}
+
 /*namespace checkers*/ }

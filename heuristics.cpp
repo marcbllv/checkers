@@ -20,7 +20,7 @@ GameState Heuristics::topMinmax(GameState root, const Deadline &pDue) {
     int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
     std::vector<GameState> children;
-    root.findPossibleMoves(children);
+    Player::nextMoves(children, 1);
 
     for(GameState n : children) {
         currVal = Heuristics::minmax(n, true, depth, pDue, alpha, beta);
@@ -36,9 +36,6 @@ GameState Heuristics::topMinmax(GameState root, const Deadline &pDue) {
 
 int Heuristics::minmax(GameState root, bool color, int depth,
         const Deadline &pDue, int alpha, int beta) {
-
-    std::vector<GameState> children;
-    root.findPossibleMoves(children);
 
     if(depth == 0) {
         nodesSeen++;
