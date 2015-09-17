@@ -12,46 +12,57 @@ constexpr unsigned int Heuristics::MAINDIAG[8];
 
 // Top level minmax
 // Special treatment for not returning a value but a gamestate
-GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
-   if(root.children.empty()) {
-      return root.gameState;
-   } else {
-       int maxVal = -Heuristics::INFINITY;
-       int currVal;
-       GameState bestGS;
-       int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
+GameState Heuristics::topMinmax(GameState root, const Deadline &pDue) {
+    int maxVal = -Heuristics::INFINITY;
+    int currVal;
+    GameState bestGS;
+    int depth = Heuristics::DEPTH;
+    int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
-       for(Node n : root.children) {
-           currVal = Heuristics::minmax(n, false, pDue, alpha, beta);
+    std::vector<GameState> children;
+    root.findPossibleMoves(children);
 
-           if(currVal > maxVal) {
-               maxVal = currVal;
-               bestGS = n.gameState;
-           }
-       }
+    for(GameState n : children) {
+        currVal = Heuristics::minmax(n, true, depth, pDue, alpha, beta);
 
-       return bestGS;
-   } 
+        if(currVal > maxVal) {
+            maxVal = currVal;
+            bestGS = n;
+        }
+    }
+
+    return bestGS;
 }
 
-int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
-        int alpha, int beta) {
+int Heuristics::minmax(GameState root, bool color, int depth,
+        const Deadline &pDue, int alpha, int beta) {
 
-    if(root.children.empty()) {
-        ++nodesSeen;
-        return Heuristics::evaluate(root.gameState, Player::color); 
+    std::vector<GameState> children;
+    root.findPossibleMoves(children);
+
+    if(depth == 0) {
+        nodesSeen++;
+        return Heuristics::evaluate(root, Player::color); 
+
+        // If last move is a jump : going on and see when jumps stop
+        //Move lastMove = root.gameState.getMove();
+        //if(lastMove.isJump()) {
+        //    return minmax(root, color, 0, pDue, alpha, beta);
+        //} else { // Stop getting deeper
+        //    return Heuristics::evaluate(root.gameState, Player::color); 
+        //}
     } else {
 
         if(color) { // Main player : maximizing
             int maxVal = -Heuristics::INFINITY;
             int currVal;
 
-            for(Node n : root.children) {
+            for(GameState n : children) {
                 if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
                     return maxVal;
                 }
 
-                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
+                currVal = Heuristics::minmax(n, !color, depth - 1, pDue, alpha, beta);
                 if(currVal > maxVal) {
                     maxVal = currVal;
 
@@ -70,12 +81,12 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
             int minVal = Heuristics::INFINITY;
             int currVal;
 
-            for(Node n : root.children) {
+            for(GameState n : children) {
                 if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
                     return minVal;
                 }
 
-                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
+                currVal = Heuristics::minmax(n, !color, depth - 1, pDue, alpha, beta);
                 if(currVal < minVal) {
                     minVal = currVal;
 

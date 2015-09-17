@@ -17,9 +17,17 @@ game0:
 	rm -f pipe && mkfifo pipe
 	./$(EXE) init verbose < pipe | ./agent0 > pipe
 
-game1:
+game7:
 	rm -f pipe && mkfifo pipe
-	./v8 init verbose < pipe | ./$(EXE) > pipe
+	./$(EXE) init verbose < pipe | ./v7 > pipe
+
+game7bis:
+	rm -f pipe && mkfifo pipe
+	./$(EXE) init verbose < pipe | ./v7bis > pipe
+
+game8:
+	rm -f pipe && mkfifo pipe
+	./$(EXE) init verbose < pipe | ./v8 > pipe
 
 gamerand:
 	rm -f pipe && mkfifo pipe

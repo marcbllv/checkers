@@ -27,11 +27,12 @@ GameState Player::play(const GameState &pState, const Deadline &pDue) {
     }
 
     // Building tree
-    Node root(pState);
-    root.mkTree(Heuristics::DEPTH, true);
+    //Node root(pState);
+    //root.mkTree(Heuristics::DEPTH, true);
 
     // Computing minmax algorithm
-    GameState bestGS = Heuristics::topMinmax(root, pDue);
+    GameState bestGS = Heuristics::topMinmax(pState, pDue);
+    std::cerr << "Nodes seen : " << nodesSeen << std::endl;
     return bestGS;
 }
 

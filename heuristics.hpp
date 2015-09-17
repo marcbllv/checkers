@@ -24,10 +24,11 @@ class Heuristics {
         static const int MAINDIAGKINGS            = 20;
 
         static const int INFINITY = 100000;
-        static const int DEPTH    = 6;
+        static const int DEPTH    = 8;
 
-        static GameState topMinmax(Node, const Deadline&);
-        static int minmax(Node, bool, const Deadline&, int, int);
+        static GameState topMinmax(GameState, const Deadline&);
+        static int minmax(GameState root, bool color, int depth,
+                const Deadline &pDue, int alpha, int beta);
         static int evaluate(GameState, uint8_t);
 };
 
