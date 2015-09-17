@@ -27,7 +27,7 @@ class Heuristics {
         static const int DEPTH    = 6;
 
         static GameState topMinmax(Node, const Deadline&);
-        static int minmax(Node, bool, const Deadline&, int, int);
+        static int minmax(Node, int, bool, const Deadline&, int, int);
         static int evaluate(GameState, uint8_t);
 };
 

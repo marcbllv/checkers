@@ -22,8 +22,8 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
        int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
        for(Node n : root.children) {
-           currVal = Heuristics::minmax(n, false, pDue, alpha, beta);
-
+           currVal = Heuristics::minmax(n, 6, false, pDue, alpha, beta);
+           std::cerr << currVal << std::endl;
            if(currVal > maxVal) {
                maxVal = currVal;
                bestGS = n.gameState;
@@ -34,13 +34,16 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
    } 
 }
 
-int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
+int Heuristics::minmax(Node root, int depth, bool color, const Deadline &pDue,
         int alpha, int beta) {
 
-    if(root.children.empty()) {
+    if(depth) {
         ++nodesSeen;
         return Heuristics::evaluate(root.gameState, Player::color); 
     } else {
+
+        std::cerr << "node seen" << std::endl;
+        root.mkTree(1, color);
 
         if(color) { // Main player : maximizing
             int maxVal = -Heuristics::INFINITY;
@@ -51,7 +54,7 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
                     return maxVal;
                 }
 
-                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
+                currVal = Heuristics::minmax(n, depth - 1, !color, pDue, alpha, beta);
                 if(currVal > maxVal) {
                     maxVal = currVal;
 
@@ -75,7 +78,7 @@ int Heuristics::minmax(Node root, bool color, const Deadline &pDue,
                     return minVal;
                 }
 
-                currVal = Heuristics::minmax(n, !color, pDue, alpha, beta);
+                currVal = Heuristics::minmax(n, depth - 1, !color, pDue, alpha, beta);
                 if(currVal < minVal) {
                     minVal = currVal;
 
@@ -108,7 +111,7 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
 
     int pRow[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
     int pRowOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    int kRow[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int kRow[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
     int kRowOpp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     int pCol[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
