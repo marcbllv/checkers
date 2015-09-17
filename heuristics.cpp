@@ -18,29 +18,41 @@ GameState Heuristics::topMinmax(Node root, const Deadline &pDue) {
    } else {
        int maxVal = -Heuristics::INFINITY;
        int currVal;
-       GameState bestGS;
+       GameState bestGS = root.children[0].gameState;
        int alpha = -Heuristics::INFINITY, beta = Heuristics::INFINITY;
 
        for(Node n : root.children) {
+           if(pDue.getSeconds() - pDue.now().getSeconds() < 0.1) {
+               std::cerr << "TIME !" << std::endl;
+               return bestGS;
+           }
            currVal = Heuristics::minmax(n, Heuristics::DEPTH - 1, false, pDue, alpha, beta);
            if(currVal > maxVal) {
                maxVal = currVal;
                bestGS = n.gameState;
+               if(alpha < maxVal) {
+                   alpha = maxVal;
+               }
            }
        }
+
+       std::cerr << "best val " << maxVal << std::endl;
 
        return bestGS;
    } 
 }
 
-int Heuristics::minmax(Node root, int depth, bool color, const Deadline &pDue,
+int Heuristics::minmax(Node r, int depth, bool color, const Deadline &pDue,
         int alpha, int beta) {
 
     if(depth == 0) {
-        ++nodesSeen;
-        return Heuristics::evaluate(root.gameState, Player::color); 
-    } else {
 
+
+        ++nodesSeen;
+        return Heuristics::evaluate(r.gameState, Player::color); 
+    } else {
+        
+        Node root(r.gameState);
         root.mkTree(1, color);
 
         if(color) { // Main player : maximizing
@@ -48,9 +60,6 @@ int Heuristics::minmax(Node root, int depth, bool color, const Deadline &pDue,
             int currVal;
 
             for(Node n : root.children) {
-                if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
-                    return maxVal;
-                }
 
                 currVal = Heuristics::minmax(n, depth - 1, !color, pDue, alpha, beta);
                 if(currVal > maxVal) {
@@ -72,9 +81,6 @@ int Heuristics::minmax(Node root, int depth, bool color, const Deadline &pDue,
             int currVal;
 
             for(Node n : root.children) {
-                if(pDue.getSeconds() - pDue.now().getSeconds() < 0.8) {
-                    return minVal;
-                }
 
                 currVal = Heuristics::minmax(n, depth - 1, !color, pDue, alpha, beta);
                 if(currVal < minVal) {
@@ -175,6 +181,14 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
         }
     }
 
+    // Infinite score (or -Infinity) if it's a winning or losing game state
+    if(pieces == 0) {
+        return -Heuristics::INFINITY;
+    }
+    if(oppPieces == 0) {
+        return Heuristics::INFINITY;
+    }
+
     // Early / mid game
     if((pieces - oppPieces) < 4 || oppPieces > 4) {
         // Combining row coeffs
@@ -229,13 +243,8 @@ int Heuristics::evaluate(GameState gs, uint8_t color) {
     }
 
     evaluation += 
-        pieces * Heuristics::PIECE - oppPieces * Heuristics::OPPPIECE +
-        kings * Heuristics::KING - oppKings * Heuristics::OPPKING +
-        (pieces - oppPieces) * (pieces - oppPieces) * (pieces - oppPieces > 0 ? 1 : -1);
-
-    // Infinite score (or -Infinity) if it's a winning or losing game state
-    evaluation += (oppPieces == 0 ? Heuristics::INFINITY : 0);
-    evaluation -= (pieces == 0 ? Heuristics::INFINITY : 0);
+        pieces * Heuristics::PIECE - oppPieces * Heuristics::OPPPIECE;
+        //kings * Heuristics::KING - oppKings * Heuristics::OPPKING; 
 
     return evaluation;
 }
